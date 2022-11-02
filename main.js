@@ -13,7 +13,7 @@ function templateHTML(title, list, body, control) {
     <meta charset="utf-8">
   </head>
   <body>
-    <h1><a href="/">WEB1</a></h1>
+    <h1><a href="/">WEB</a></h1>
     ${list}
     ${control}
     ${body}
@@ -63,8 +63,14 @@ var app = http.createServer(function (request, response) {
           var title = queryData.id;
           var list = templateList(filelist);
           var template = templateHTML(title, list, `<h2>${title}</h2>${description}`, 
-          `<a href = "/create">create</a> <a href="/update?id=${title}">update</a>`);
-
+          `<a href = "/create">create</a> 
+           <a href="/update?id=${title}">update</a>
+           <form action="/delete_process" method="post">
+            <input type="hidden" name ="id" value="${title}">
+            <input type ="submit" value ="delete">
+           </form>
+           `);
+ 
           response.writeHead(200);
           response.end(template);
         });
@@ -136,6 +142,8 @@ var app = http.createServer(function (request, response) {
           </form>
           `,
           `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+          
+          
         );
 
         response.writeHead(200);
@@ -143,7 +151,7 @@ var app = http.createServer(function (request, response) {
       });
     });
   }
-  else if(pathname == '/update_process'){
+  else if(pathname === '/update_process'){
     var body = ''
     request.on('data', function (data) {
       body += data;
@@ -160,6 +168,22 @@ var app = http.createServer(function (request, response) {
         })
       });
   });
+  }
+  else if (pathname === '/delete_process'){
+    var body = ''
+    request.on('data', function (data) {
+      body += data;
+    });
+    request.on('end', function(){
+      var post = qs.parse(body);
+      var id = post.id;
+      fs.unlinkSync(`data/${id}`, function(err){
+        response.writeHead(302, {Location: `/`});
+        response.end();
+      })
+      
+      });
+    
   }
   else {
     response.writeHead(404);
